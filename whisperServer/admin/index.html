@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
+  <script>
+    async function fetchMetrics() {
+      const response = await fetch("/admin/metrics");
+      const data = await response.json();
+
+      document.getElementById("total-requests").innerText = data.totalRequests;
+      document.getElementById("successful-requests").innerText = data.successfulRequests;
+      document.getElementById("failed-requests").innerText = data.failedRequests;
+      document.getElementById("uptime").innerText = data.uptime;
+      document.getElementById("memory-usage").innerText = JSON.stringify(data.memoryUsage, null, 2);
+      document.getElementById("cpu-usage").innerText = data.cpuUsage.join(", ");
+    }
+
+    setInterval(fetchMetrics, 5000); 
+  </script>
+</head>
+<body>
+  <h1>Admin Panel</h1>
+  <p><strong>Total Requests:</strong> <span id="total-requests"></span></p>
+  <p><strong>Successful Requests:</strong> <span id="successful-requests"></span></p>
+  <p><strong>Failed Requests:</strong> <span id="failed-requests"></span></p>
+  <p><strong>Server Uptime:</strong> <span id="uptime"></span></p>
+  <p><strong>Memory Usage:</strong> <pre id="memory-usage"></pre></p>
+  <p><strong>CPU Load Average:</strong> <span id="cpu-usage"></span></p>
+</body>
+</html>
