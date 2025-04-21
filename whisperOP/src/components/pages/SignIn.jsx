@@ -17,7 +17,7 @@ function SignIn() {
   const handleExpire = async () => {
 
     try {
-      const response = await fetch("http://localhost:5000/userExpire", {
+      const response = await fetch("http://192.168.15.41:5000/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: userID, password: password }),
@@ -46,7 +46,7 @@ function SignIn() {
     setMessage(""); // Reset message
 
     try {
-      const response = await fetch("http://localhost:5000/login", {
+      const response = await fetch("http://192.168.15.41:5000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: userID, password: password }),
@@ -58,16 +58,8 @@ function SignIn() {
         setContainerInfo(data.container);
         setMessage("Sign In Successful!");
 
-        // Store in Redux
-        const sessionExpiresAt = Date.now() + 90 * 60 * 1000; 
-        dispatch(login({ userId: userID, password: password, sessionExpiresAt }));
+        dispatch(login({ userId: userID, password: password }));
 
-        // Auto logout after session expires
-        setTimeout(() => {
-          dispatch(logout());
-          handleExpire();
-          alert("Session expired. Please sign in again.");
-        },  90 * 60 * 1000);
       } else {
         setMessage(data.message || "Invalid User ID or Password.");
       }
@@ -77,22 +69,6 @@ function SignIn() {
     }
   };
 
-  // Auto logout when session expires
-  useEffect(() => {
-    if (sessionExpiresAt) {
-      const timeLeft = sessionExpiresAt - Date.now();
-      if (timeLeft > 0) {
-        setTimeout(() => {
-          dispatch(logout());
-          handleExpire();
-          alert("Session expired. Please sign in again.");
-        }, timeLeft);
-      } else {
-        handleExpire();
-        dispatch(logout());
-      }
-    }
-  }, [sessionExpiresAt, dispatch]);
 
   if (isAuthenticated) {
     return <MainPage containerInfo={containerInfo} />;

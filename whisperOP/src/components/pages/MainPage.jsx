@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../../../redux/authSlice"; // Adjust the path as needed
+import { logout } from "../../../redux/authSlice"; 
 
 function MainPage() {
   const dispatch = useDispatch();
@@ -36,7 +36,7 @@ function MainPage() {
     formData.append("model", selectedModel);
 
     try {
-      const response = await fetch("http://localhost:5000/upload", {
+      const response = await fetch("http://192.168.15.41:5000/upload", {
         method: "POST",
         body: formData,
       });
@@ -54,6 +54,7 @@ function MainPage() {
       }
     } catch (error) {
       setUploadStatus("An error occurred during upload.");
+      console.log(error);
     } finally {
       setIsProcessing(false);
     }
@@ -62,7 +63,7 @@ function MainPage() {
   const handleLogout = async () => {
     try {
       dispatch(logout());
-      const response = await fetch("http://localhost:5000/logout", {
+      const response = await fetch("http://192.168.15.41:5000/logout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -52,7 +52,7 @@ const DevMods = () => {
     );
 
     try {
-      await axios.post("http://localhost:5000/settings", transformedConfig);
+      await axios.post("http://192.168.15.41:5000/settings", transformedConfig);
       alert("Configuration sent successfully!");
     } catch (error) {
       alert("Failed to send configuration.");

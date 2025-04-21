@@ -6,11 +6,23 @@ const path = require("path");
 const fs = require("fs");
 const os = require("os");
 
+
 const app = express();
 const PORT = 5000; // This port is used when running the server on the host machine
 
-app.use(cors());
 app.use(express.json());
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  // Handle preflight requests
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 
 // ====================================================
 // In-Memory User Management (for Demo)
@@ -39,12 +51,10 @@ app.post("/login", (req, res) => {
     return res.status(401).json({ message: "Invalid credentials." });
   }
 
-  // Create a lightweight Docker container for this user.
-  // The container is run detached with a shared volume for uploads.
-  // Adjust the image name ("veto-image-1") as needed.
+
   const containerName = `container_${userId}`;
   const uploadsPath = path.join(__dirname, "uploads");
-  const dockerRunCmd = `sudo docker run -d --name ${containerName} -v ${uploadsPath}:/uploads veto-image-1`;
+  const dockerRunCmd = `docker run -d --name ${containerName} -v ${uploadsPath}:/uploads veto-image-1`;
 
   exec(dockerRunCmd, (err, stdout, stderr) => {
     if (err) {
@@ -78,7 +88,7 @@ app.post("/logout", (req, res) => {
   if (!containerName) {
     return res.status(400).json({ message: "No container found for user." });
   }
-  const dockerStopCmd = `sudo docker rm -f ${containerName}`;
+  const dockerStopCmd = `docker rm -f ${containerName}`;
   exec(dockerStopCmd, (err, stdout, stderr) => {
     if (err) {
       console.error("Error deleting container:", err);
@@ -313,7 +323,7 @@ const runCommand = (filePath, model, id, res, resolve, reject, userId) => {
     .join(" ");
 
   // Run the transcription command (whisper) on the host.
-  const command = `whisper ${filePath} --model ${model} --task translate ${params}`;
+  const command = `whisper ${filePath} --model ${model} --task translate --output_format txt ${params}`;
 
   exec(command, (err, stdout) => {
     if (err) {
@@ -341,7 +351,7 @@ const runCommand = (filePath, model, id, res, resolve, reject, userId) => {
     }
 
     // Execute a command inside the container that echoes the transcription.
-    const dockerSendCmd = `sudo docker exec ${containerName} echo "Transcription: ${cleanedOutput}"`;
+    const dockerSendCmd = `docker exec ${containerName} echo "Transcription: ${cleanedOutput}"`;
     exec(dockerSendCmd, (execErr, execStdout, execStderr) => {
       if (execErr) {
         console.error("Error sending transcription to container:", execErr);
@@ -353,7 +363,7 @@ const runCommand = (filePath, model, id, res, resolve, reject, userId) => {
         return reject(new Error("Error sending transcription to container."));
       } else {
         console.log("Transcription sent to container:", containerName);
-        console.log(cleanedOutput);
+        //console.log(cleanedOutput);
         metrics.successfulRequests++;
         metrics.activeRequests--;
         metrics.requestLogs.push({
@@ -425,7 +435,7 @@ const cleanupContainers = () => {
   // Iterate through containers created by the server
   Object.values(userContainers).forEach((containerName) => {
     try {
-      execSync(`sudo docker rm -f ${containerName}`, { stdio: "inherit" });
+      execSync(`docker rm -f ${containerName}`, { stdio: "inherit" });
       console.log(`Container ${containerName} removed.`);
     } catch (err) {
       console.error(`Error removing container ${containerName}:`, err.message);
@@ -437,7 +447,7 @@ const cleanupUniqueContainer = (containerName) => {
   console.log(`Destroying Container: ${containerName}`);
 
     try {
-      execSync(`sudo docker rm -f ${containerName}`, { stdio: "inherit" });
+      execSync(`docker rm -f ${containerName}`, { stdio: "inherit" });
       console.log(`Container ${containerName} removed.`);
     } catch (err) {
       console.error(`Error removing container ${containerName}:`, err.message);
@@ -487,6 +497,8 @@ process.on("exit", () => {
 // ====================================================
 // Start the Server (listens on PORT 5000)
 // ====================================================
-app.listen(PORT, () => {
+
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
+

@@ -27,7 +27,7 @@ const AdminPanel = () => {
     useEffect(() => {
         const fetchMetrics = async () => {
             try {
-                const response = await fetch("http://localhost:5000/admin/metrics");
+                const response = await fetch("http://192.168.15.41:5000/admin/metrics");
                 const data = await response.json();
                 setMetrics(data);
 
