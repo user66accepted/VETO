@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Line, Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler } from 'chart.js';
 import chartjsPluginAnnotation from 'chartjs-plugin-annotation';
-import DevMods from "../pages/DevMods";
 
 ChartJS.register(
     CategoryScale,
@@ -27,7 +26,7 @@ const AdminPanel = () => {
     useEffect(() => {
         const fetchMetrics = async () => {
             try {
-                const response = await fetch("http://192.168.15.41:5000/admin/metrics");
+                const response = await fetch("http://192.168.15.237:5001/admin/metrics");
                 const data = await response.json();
                 setMetrics(data);
 
@@ -326,7 +325,6 @@ const AdminPanel = () => {
                     </div>
                 </div>
             </div>
-            <DevMods />
         </div>
     );
 };
